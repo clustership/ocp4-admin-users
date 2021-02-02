@@ -1,0 +1,26 @@
+public_domain: bikini-bottom.com
+cluster_name: patrick-star
+
+dns_provider: dnsimple
+dns_provider_env:
+  DNSimple_OAUTH_TOKEN: someoauthtokentograbfromdnsimple
+
+
+#
+# OVH
+#
+# dns_provider: ovh
+# dns_provider_env:
+#   # Application Key
+#   OVH_AK="sdfsdfsdfljlbjkljlkjsdfoiwje"
+#   # Application Secret
+#   OVH_AS="sdfsafsdfsdfdsfsdfsa"
+#   # Consumer Key
+#   OVH_CK="sdfsdfsdfsdfsdfdsf"
+#   OVH_END_POINT=ovh-eu
+#
+#
+# For test/debugging purpose
+# 
+# acme_server: https://acme-staging-v02.api.letsencrypt.org/directory
+challenge_alias: bikini-bottom.com

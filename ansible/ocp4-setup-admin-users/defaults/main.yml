@@ -1,0 +1,3 @@
+---
+# defaults file for ocp4-setup-admin-users
+k8s_validate_certs: true

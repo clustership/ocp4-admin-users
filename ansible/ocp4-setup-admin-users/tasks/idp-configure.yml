@@ -1,0 +1,84 @@
+---
+- tags:
+    - post-install
+    - idp
+  set_fact:
+    identity_providers: "[]"
+    auth_htpasswd: "{{ lookup('file', playbook_dir + '/../ocp4-htpasswd') }}"
+
+- block:
+  - name: Handle auth_htpasswd
+    block:
+      - name: Create htpasswd secret
+        k8s:
+          state: present
+          definition:
+            apiVersion: v1
+            data:
+              htpasswd: "{{ auth_htpasswd | b64encode }}"
+            kind: Secret
+            metadata:
+              name: htpasswd
+              namespace: openshift-config
+            type: Opaque
+
+      - name: Create htpasswd identity provider template
+        set_fact:
+          htpasswd_idp:
+            htpasswd:
+              fileData:
+                name: htpasswd
+            mappingMethod: claim
+            name: Local
+            type: HTPasswd
+
+      - name: Push htpasswd_idp to identity_providers
+        set_fact:
+          identity_providers: "{{ identity_providers }} + [ {{ htpasswd_idp }} ]"
+    when: auth_htpasswd is defined
+    tags:
+      - post-install
+      - idp
+
+  - name: Configure identity providers
+    k8s:
+      state: present
+      definition:
+          apiVersion: config.openshift.io/v1
+          kind: OAuth
+          metadata:
+            name: cluster
+          spec:
+            identityProviders: "{{ identity_providers }}"
+    tags:
+      - post-install
+      - idp
+
+  - name: Setup cluster role bindings
+    k8s:
+      state: present
+      definition:
+        kind: ClusterRoleBinding
+        apiVersion: rbac.authorization.k8s.io/v1
+        metadata:
+          name: "{{ item.name }}-{{ item.cluster_role }}"
+        subjects:
+        - apiGroup: rbac.authorization.k8s.io
+          kind: User
+          name: "{{ item.name }}"
+        roleRef:
+          kind: ClusterRole
+          name: "{{ item.cluster_role }}"
+    with_items: "{{ cluster_role_bindings }}"
+    when: cluster_role_bindings is defined
+    tags:
+      - post-install
+      - rolebindings
+
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+
+  module_defaults:
+    group/k8s:
+      host: "https://api.{{ cluster_name }}.{{ public_domain }}:6443"
+      validate_certs: "{{ k8s_validate_certs }}"
