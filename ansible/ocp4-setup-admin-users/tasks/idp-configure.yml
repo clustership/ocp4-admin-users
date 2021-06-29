@@ -61,11 +61,11 @@
         kind: ClusterRoleBinding
         apiVersion: rbac.authorization.k8s.io/v1
         metadata:
-          name: "{{ item.name }}-{{ item.cluster_role }}"
+          name: "{{ item.username }}-{{ item.cluster_role }}"
         subjects:
         - apiGroup: rbac.authorization.k8s.io
           kind: User
-          name: "{{ item.name }}"
+          name: "{{ item.username }}"
         roleRef:
           kind: ClusterRole
           name: "{{ item.cluster_role }}"
@@ -75,10 +75,9 @@
       - post-install
       - rolebindings
 
-  environment:
-    KUBECONFIG: "{{ kubeconfig }}"
+  # environment:
+  #   KUBECONFIG: "{{ kubeconfig }}"
 
   module_defaults:
     group/k8s:
-      host: "https://api.{{ cluster_name }}.{{ public_domain }}:6443"
-      validate_certs: "{{ k8s_validate_certs }}"
+      kubeconfig: "{{ kubeconfig }}"

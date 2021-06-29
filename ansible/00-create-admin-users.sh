@@ -3,7 +3,8 @@
 - hosts: localhost
   vars_files:
   - ../cluster.yml
-  become: True
+  become: false
+  gather_facts: false
   tasks:
   - import_role:
       name: ocp4-setup-admin-users
